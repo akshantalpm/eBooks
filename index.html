@@ -1,0 +1,229 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Example Backbone App</title>
+
+  <link href="css/bootstrap.min.css" media="all" rel="stylesheet" type="text/css" />
+  <link href="css/bootstrap-responsive.min.css" media="all" rel="stylesheet" type="text/css" />
+  <link href="css/overrides.css" media="all" rel="stylesheet" type="text/css" />
+
+  <script type="text/javascript" src="js/libs/jquery.min.js"></script>
+  <script type="text/javascript" src="js/libs/underscore.min.js"></script>
+  <script type="text/javascript" src="js/libs/backbone.min.js"></script>
+  <script type="text/javascript" src="js/libs/bootstrap.min.js"></script>
+
+  <script type="text/javascript" src="js/eBook_router.js"></script>
+  <script type="text/javascript" src="js/models/chapter_model.js"></script>
+  <script type="text/javascript" src="js/models/module_model.js"></script>
+  <script type="text/javascript" src="js/models/eBook_model.js"></script>
+  <script type="text/javascript" src="js/views/eBook_index.js"></script>
+  <script type="text/javascript" src="js/views/eBook_row.js"></script>
+  <script type="text/javascript" src="js/views/eBook_new.js"></script>
+  <script type="text/javascript" src="js/views/eBook_edit.js"></script>
+  <script type="text/javascript" src="js/views/eBook_show.js"></script>
+  <script type="text/javascript" src="js/views/module_new.js"></script>
+  <script type="text/javascript" src="js/views/module_row.js"></script>
+  <script type="text/javascript" src="js/views/module_edit.js"></script>
+  <script type="text/javascript" src="js/views/chapter_new.js"></script>
+  <script type="text/javascript" src="js/views/chapter_row.js"></script>
+  <script type="text/javascript" src="js/views/chapter_edit.js"></script>
+</head>
+<body>
+  <div id="wrap">
+    <div class="container">
+      <div class="page-header">
+        <h1>Create ebook</h1>
+      </div>
+
+      <div id="primary-content">
+        <!-- the container that gets populated with the index -->
+      </div>
+    </div>
+  </div>
+  <!-- the form, used for create and edit -->
+  <script type="text/jst" id="formTemplate">
+    <div class="well">
+      <form class="form-signin">
+        <h2 class="form-signin-heading"></h2>
+        <input type="text" class="input-block-level" name="title" placeholder="Title" value="<%= title %>">
+      
+        <textarea class="input-block-level" rows="5" name="description" placeholder="Description"><%= description %></textarea>
+        <div class="action-bar">
+          <button class="save btn btn-large btn-primary" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </script>
+
+  <script type="text/jst" id="editeBookTemplate">
+    <div class="well">
+      <form class="form-signin">
+        <h2 class="form-signin-heading"></h2>
+          <div>
+              <a href="#eBook/<%= id %>/module/new" class="module btn btn-large btn-primary" type="submit">Add Module </a>
+          </div>
+         <br>
+        <input type="text" class="input-block-level" name="title" placeholder="My new eBook" value="<%= title %>">
+
+        <textarea class="input-block-level" rows="5" name="description" placeholder="Description"><%= description %></textarea>
+        <div class="action-bar">
+          <button class="save btn btn-large btn-primary" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </script>
+
+  <script type="text/jst" id="editModuleTemplate">
+    <div class="well">
+      <form class="form-signin">
+        <h2 class="form-signin-heading"></h2>
+          <div>
+              <a href="#eBook/<%= ebookId %>/module/<%= id%>/new" class="module btn btn-large btn-primary" type="submit">Add Chapter </a>
+          </div>
+         <br>
+        <input type="text" class="input-block-level" name="title" placeholder="My new module" value="<%= title %>">
+
+        <textarea class="input-block-level" rows="5" name="description" placeholder="Description"><%= description %></textarea>
+        <div class="action-bar">
+          <button class="save btn btn-large btn-primary" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </script>
+
+  <script type="text/jst" id="editChapterTemplate">
+    <div class="well">
+      <form class="form-signin">
+        <h2 class="form-signin-heading"></h2>
+
+        <input type="text" class="input-block-level" name="title" placeholder="My new chapter" value="<%= title %>">
+
+        <textarea class="input-block-level" rows="5" name="description" placeholder="Description"><%= description %></textarea>
+        <div class="action-bar">
+          <button class="save btn btn-large btn-primary" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </script>
+
+  <script type="text/template" id="eBookTableHeaderTemplate">
+    <div class="well">
+      <a class="btn btn-block btn-large btn-info" href="#eBook/new">Create New eBbook</a>
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th width="20%">Title</th>
+          <th width="20%">Last Modified</th>
+          <th>Description</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </script>
+
+  <script type="text/template" id="moduleTableHeaderTemplate">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th width="20%">Title</th>
+          <th>Description</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </script>
+
+  <script type="text/template" id="chapterTableHeaderTemplate">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th width="20%">Title</th>
+          <th>Description</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </script>
+
+  <script type="text/template" id="eBookRowTemplate">
+    <td>
+      <a href="#eBook/<%= id %>/view"><%= title %></a>
+    </td>
+    <td><%= lastModified %></td>
+    <td><% print(description.substring(0, 100)) %>...</td>
+    <td>
+      <a href="#" class="delete btn btn-danger btn-small">delete</a>
+    </td>
+  </script>
+
+  <script type="text/template" id="moduleRowTemplate">
+    <td>
+      <a href="#eBook/<%= ebookId %>/module/<%= id%>/edit"><%= title %></a>
+    </td>
+    <td><% print(description.substring(0, 100)) %>...</td>
+    <td>
+      <a href="#" class="delete btn btn-danger btn-small">delete</a>
+    </td>
+  </script>
+
+  <script type="text/template" id="chapterRowTemplate">
+    <td>
+      <a href="#eBook/<%= ebookId %>/module/<%= moduleId%>/chapter/<%= id%>/edit"><%= title %></a>
+    </td>
+    <td><% print(description.substring(0, 100)) %>...</td>
+    <td>
+      <a href="#" class="delete btn btn-danger btn-small">delete</a>
+    </td>
+  </script>
+
+  <script type="text/template" id="showTemplate">
+    <div class="well">
+      <a class="btn btn-large" href="#eBooks/index">
+        <i class="icon-arrow-left"></i>
+        Back To Index
+      </a>
+      <a class="btn btn-large btn-info" href="#eBook/<%= id %>/edit">
+        <i class="icon-pencil icon-white"></i>
+        Edit Ebook
+      </a>
+    </div>
+    <h2>
+      <%= title %>
+    </h2>
+    <p style="white-space:pre-wrap;"><%= description %></p>
+  </script>
+
+  <script type="text/javascript">
+    var eBooks = new APP.Collections.EBookCollection();
+    var router = new APP.Routers.EBookRouter({eBooks: eBooks});
+
+    Backbone.history.start();
+    // we manually pass in the initial data, but this would be called with a collection.fetch() normally
+    eBooks.reset([
+                  {
+                    "title": "GWT Rocks",
+                    "id": "48",
+                    "lastModified": "Fri Jun 14 2013",
+                    "description": "GWT Rocks description"
+                  },
+                  {
+                    "title": "GWT in Action",
+                    "id": "52",
+                    "lastModified": "Sat Jun 15 2013",
+                    "description": "GWT in Action description"
+                  },
+                  {
+                      "title": "GWT for Dummies",
+                      "id": "45",
+                      "lastModified": "Sun Jun 16 2013",
+                      "description": "GWT for Dummies description"
+                  }
+                ]
+              );
+  </script>
+</body>
+</html>
